@@ -2,6 +2,13 @@
 Melody，你的幸运之声！  
 Melody 是一个友善且易于使用的 Telegram 抽奖机器人，它能为你的群组或频道带来欢乐和兴奋。她就像一首美妙的旋律，为你的活动增添活力。  
 
+## 一键部署
+```dockerfile
+docker run -d \
+  -e TELEGRAM_BOT_TOKEN=7386138036:AAGsYvDUI9SNnyymUP9eo8VpWwsohRiBnZo \
+  --name melody \
+  josemespitia/melody:latest
+
 ## Melody 的特点：
 简单易用： Melody 的操作界面简洁直观，即使是新手也能轻松上手。  
 功能强大： Melody 支持多种抽奖模式，包括随机抽取、幸运轮盘、积分抽奖等，满足你的各种需求。  
