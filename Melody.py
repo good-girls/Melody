@@ -1,7 +1,7 @@
 import os
 import logging
 from telegram import Chat, Update, Bot
-from telegram.ext import Application, Updater, filters, MessageHandler, CommandHandler, ContextTypes, CallbackContext
+from telegram.ext import ApplicationBuilder, Updater, filters, MessageHandler, CommandHandler, ContextTypes, CallbackContext
 from telegram.error import TelegramError
 from functools import partial
 import asyncio
@@ -68,7 +68,7 @@ async def is_user_admin(update: Update) -> bool:
         if chat_member.status in ['administrator', 'creator']:
             return True
     except TelegramError as e:
-        print(f"Error checking admin status: {e}")
+        logging.error(f"Error checking admin status: {e}")
     return False
 
 # 处理 /create 命令
@@ -178,7 +178,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         context.user_data['chat_id'] = update.message.chat_id
 
         # 调度删除消息任务
-        context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=participant_message.message_id), 30)
+        context.job_queue.run_once(wrap_delete_message(context.user_data), 30)
 
         if active_raffle.end_condition.endswith('p'):
             required_participants = int(active_raffle.end_condition[:-1])
@@ -197,7 +197,7 @@ async def delete_message(context: CallbackContext) -> None:
     try:
         await context.bot.delete_message(chat_id, message_id)
     except TelegramError as e:
-        print(f"Error deleting message: {e}")
+        logging.error(f"Error deleting message: {e}")
 
 def wrap_delete_message(chat_id, message_id):
     async def wrapped(context: CallbackContext):
@@ -250,7 +250,7 @@ def main() -> None:
         return
 
     # 创建 Application 对象
-    application = Application.builder().token(bot_token).build()
+    application = ApplicationBuilder().token(bot_token).build()
 
     # 注册处理命令的处理程序
     application.add_handler(CommandHandler("start", start))

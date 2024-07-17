@@ -1,6 +1,7 @@
 FROM python:3.9-slim
 
 ARG VERSION=v1.0
+ARG TELEGRAM_BOT_TOKEN
 
 LABEL maintainer="Jeromeliaya <20josemespitia@gmail.com>"
 LABEL repository="https://github.com/good-girls/Melody"
@@ -22,6 +23,7 @@ fi
 
 ENV Melody_SERVER_PORT=1109
 ENV GIN_MODE=release
+ENV TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN  # 使用 ARG 定义的变量
 
 WORKDIR /Melody
 
