@@ -19,14 +19,13 @@ fi
 
 ENV Melody_SERVER_PORT=1109
 ENV GIN_MODE=release
-ENV TELEGRAM_BOT_TOKEN=your_bot_token_here
 
 WORKDIR /Melody
 
 COPY . /Melody
 
 RUN curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
-    pip install --no-cache-dir python-telegram-bot --upgrade \
+    && pip install --no-cache-dir python-telegram-bot --upgrade \
     && pip install --no-cache-dir "python-telegram-bot[job-queue]"
 
 EXPOSE 1109
