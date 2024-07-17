@@ -21,9 +21,8 @@ RUN if ! command -v curl >/dev/null 2>&1; then \
     apt-get update && apt-get install -y curl; \
 fi
 
-ENV Melody_SERVER_PORT=1109
 ENV GIN_MODE=release
-ENV TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN  # 使用 ARG 定义的变量
+ENV TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN
 
 WORKDIR /Melody
 
@@ -32,7 +31,5 @@ COPY . /Melody
 RUN curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
     && pip install --no-cache-dir python-telegram-bot --upgrade \
     && pip install --no-cache-dir "python-telegram-bot[job-queue]"
-
-EXPOSE 1109
 
 CMD ["python", "Melody.py"]
