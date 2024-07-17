@@ -5,6 +5,7 @@ from telegram.error import TelegramError
 from functools import partial
 import asyncio
 import random
+import os
 
 # 存储抽奖活动的全局变量
 active_raffle = None
@@ -238,14 +239,21 @@ def wrap_draw_raffle(chat_id):
     return wrapped
 
 def main() -> None:
-    # 注意这里修改为你的机器人token
-    application = Application.builder().token("你的机器人token").build()
+    # 获取环境变量中的 Bot Token
+    bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if not bot_token:
+        print("Error: TELEGRAM_BOT_TOKEN environment variable not found.")
+        return
+
+    # 创建 Application 对象
+    application = Application.builder().token(bot_token).build()
 
     # 注册处理命令的处理程序
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("create", create))
     application.add_handler(CommandHandler("join", join))
     application.add_handler(CommandHandler("cancel", cancel))
+    application.add_handler(CommandHandler("test", test))  # 注册测试命令
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Run the bot until the user presses Ctrl-C
