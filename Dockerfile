@@ -25,8 +25,8 @@ WORKDIR /Melody
 
 COPY . /Melody
 
-RUN curl -fsSL https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
-    curl -fsSL https://raw.githubusercontent.com/good-girls/Melody/main/requirements.txt \
+RUN curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
+    curl -O https://raw.githubusercontent.com/good-girls/Melody/main/requirements.txt \
     pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 1109
