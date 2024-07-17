@@ -22,7 +22,6 @@ fi
 
 ENV Melody_SERVER_PORT=1109
 ENV GIN_MODE=release
-ENV TELEGRAM_BOT_TOKEN
 
 WORKDIR /Melody
 
@@ -34,4 +33,4 @@ RUN curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
 
 EXPOSE 1109
 
-CMD ["python", "Melody.py", "$TELEGRAM_BOT_TOKEN"]
+CMD ["python", "Melody.py"]
