@@ -26,8 +26,8 @@ WORKDIR /Melody
 COPY . /Melody
 
 RUN curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.py \
-    curl -O https://raw.githubusercontent.com/good-girls/Melody/main/requirements.txt \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir python-telegram-bot --upgrade \
+    && pip install --no-cache-dir "python-telegram-bot[job-queue]"
 
 EXPOSE 1109
 
