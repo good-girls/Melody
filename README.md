@@ -1,7 +1,7 @@
 # Melody
 Melody，你的幸运之声！  
 Melody 是一个友善且易于使用的 Telegram 抽奖机器人，它能为你的群组或频道带来欢乐和兴奋。她就像一首美妙的旋律，为你的活动增添活力。  
-感谢原作者提供的灵感：DaBoWin  
+感谢原作者提供的灵感：**DaBoWin**  
 项目地址：https://github.com/DaBoWin/Sola
 
 ## 一键部署
