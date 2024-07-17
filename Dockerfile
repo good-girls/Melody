@@ -1,7 +1,10 @@
 FROM python:3.9-slim
 
+ARG VERSION=v1.0
+
 LABEL maintainer="Jeromeliaya <20josemespitia@gmail.com>"
 LABEL repository="https://github.com/good-girls/Melody"
+LABEL version=$VERSION
 
 RUN apt-get update && apt-get install -y \
     build-essential \
