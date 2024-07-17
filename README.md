@@ -7,7 +7,7 @@ Melody 是一个友善且易于使用的 Telegram 抽奖机器人，它能为你
 docker run -d \
   -e TELEGRAM_BOT_TOKEN=7386138036:AAGsYvDUI9SNnyymUP9eo8VpWwsohRiBnZo \
   --name melody \
-  josemespitia/melody:latest
+  josemespitia/melody:latest```
 
 ## Melody 的特点：
 简单易用： Melody 的操作界面简洁直观，即使是新手也能轻松上手。  
