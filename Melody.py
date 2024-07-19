@@ -10,29 +10,38 @@ import random
 # 存储抽奖活动的全局变量
 active_raffle = None
 
+def html_escape(text):
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "&quot;")
+    # text = text.replace("'", "&apos;")
+    return text
+
 class Raffle:
     def __init__(self, prize_name, prize_count, secret_code, end_condition):
         self.prize_name = prize_name
         self.prize_count = prize_count
         self.secret_code = secret_code
         self.end_condition = end_condition
-        self.participants = []
+        self.participants = {}
 
-    def add_participant(self, username):
-        if username not in self.participants:
-            self.participants.append(username)
+    def add_participant(self, userid, fullname):
+        if userid not in self.participants:
+            self.participants[userid] = fullname
             return True
         return False
 
     def draw_winners(self):
-        winners = random.sample(self.participants, min(self.prize_count, len(self.participants)))
+        winners = random.sample(sorted(self.participants), min(self.prize_count, len(self.participants)))
         return winners
 
 # 处理 /start 命令
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        '欢迎使用Melody抽奖机器人！使用 /create 创建抽奖活动。\n'
+        '欢迎使用Melody抽奖机器人！使用 <code>/create</code> 创建抽奖活动。\n'
         '设置奖品名称、奖品数量、参与口令以及抽奖条件（按时间或参与人数）。'
+        ,parse_mode='HTML'
     )
 
 # 处理 /test 命令
@@ -46,13 +55,15 @@ async def test(update: Update,  context: CallbackContext) -> None:
     winners = active_raffle.draw_winners()
     await update.message.reply_text(
         f'chatid：{chat_id}\n'
-        f'获奖者：{", ".join(winners)}\n'
+        f'获奖者：{", ".join([f"<a href=\"tg://user?id={w}\">{html_escape(active_raffle.participants[w])}</a>" for w in winners])}',
+        parse_mode='HTML'
     )
     await context.bot.send_message(
         chat_id if chat_id else context.job.context,
         f'抽奖活动结束！\n'
-        f'奖品名称：{active_raffle.prize_name}\n'
-        f'获奖者：{", ".join(winners)}\n'
+        f'奖品名称：{html_escape(active_raffle.prize_name)}\n'
+        f'获奖者：{", ".join([f"<a href=\"tg://user?id={w}\">{html_escape(active_raffle.participants[w])}</a>" for w in winners])}',
+        parse_mode='HTML'
     )
     #active_raffle = None
     await update.message.reply_text(f"测试抽奖")
@@ -85,8 +96,9 @@ async def create(update: Update, context: CallbackContext) -> None:
     args = context.args
     if len(args) < 4:
         await update.message.reply_text(
-            '请使用正确的格式：/create <奖品名称> <奖品数量> <参与口令> <抽奖条件>\n'
+            f'请使用正确的格式：<code>{html_escape('/create <奖品名称> <奖品数量> <参与口令> <抽奖条件>')}</code>\n'
             '抽奖条件可以是时间（如 "10m" 表示 10 分钟后抽奖）或人数（如 "10p" 表示 10 人参与后抽奖）。'
+            ,parse_mode='HTML'
         )
         return
 
@@ -103,11 +115,12 @@ async def create(update: Update, context: CallbackContext) -> None:
     active_raffle = Raffle(prize_name, prize_count, secret_code, end_condition)
     await update.message.reply_text(
         f'抽奖活动创建成功！\n'
-        f'奖品名称：{prize_name}\n'
+        f'奖品名称：<code>{html_escape(prize_name)}</code>\n'
         f'奖品数量：{prize_count}\n'
-        f'参与口令：{secret_code}\n'
+        f'参与口令：<code>{html_escape(secret_code)}</code>\n'
         f'抽奖条件：{end_condition}\n'
-        '请直接输入 <口令> 参与抽奖。'
+        f'请直接输入 <code>{html_escape(secret_code)}</code> 参与抽奖。'
+        ,parse_mode='HTML'
     )
 
     if end_condition.endswith('m'):
@@ -137,19 +150,19 @@ async def join(update: Update, context: CallbackContext) -> None:
         return
 
     user = update.message.from_user
-    if user.username is None:
-        await update.message.reply_text('请设置用户名称再重试。')
-        return
+    #if user.username is None:
+    #    await update.message.reply_text('请设置用户名称再重试。')
+    #    return
 
-    if active_raffle.add_participant(user.username + '-' + str(user.id)):
+    if active_raffle.add_participant((user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "") + '-' + str(user.id)):
         length = len(active_raffle.participants)
-        await update.message.reply_text(f'{user.username} 已加入抽奖！当前抽奖人数：{length}')
+        await update.message.reply_text(f'<a href=\"tg://user?id={user.id}\">{html_escape(user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "")}</a> 已加入抽奖！当前抽奖人数：<code>{length}</code>',parse_mode='HTML')
         if active_raffle.end_condition.endswith('p'):
             required_participants = int(active_raffle.end_condition[:-1])
             if len(active_raffle.participants) >= required_participants:
                 await draw_raffle(context, update.message.chat_id)
     else:
-        await update.message.reply_text(f'{user.username} 已经在抽奖名单中。')
+        await update.message.reply_text(f'<a href=\"tg://user?id={user.id}\">{html_escape(user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "")}</a> 已经在抽奖名单中。',parse_mode='HTML')
 
 # 处理用户消息
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -162,30 +175,30 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     user = update.message.from_user
-    if user.username is None:
-        hint_message = await update.message.reply_text('请设置用户名称再重试。')
-       # 调度删除消息任务
-        context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=hint_message.message_id), 30)
+    #if user.username is None:
+    #    hint_message = await update.message.reply_text('请设置用户名称再重试。')
+    #   # 调度删除消息任务
+    #    context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=hint_message.message_id), 30)
+    #
+    #    return
 
-        return
-
-    if active_raffle.add_participant(user.username + '-' + str(user.id)):
+    if active_raffle.add_participant(user.id,(user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "")):
         length = len(active_raffle.participants)
-        participant_message = await update.message.reply_text(f'{user.username} 已加入抽奖！当前抽奖人数：{length}')
+        participant_message = await update.message.reply_text(f'<a href=\"tg://user?id={user.id}\">{html_escape(user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "")}</a> 已加入抽奖！当前抽奖人数：<code>{length}</code>',parse_mode='HTML')
         
         # 存储消息 ID 和 chat ID
         context.user_data['participant_message_id'] = participant_message.message_id
         context.user_data['chat_id'] = update.message.chat_id
 
         # 调度删除消息任务
-        context.job_queue.run_once(wrap_delete_message(context.user_data), 30)
+        context.job_queue.run_once(wrap_delete_message(update.message.chat_id,participant_message.message_id), 30)
 
         if active_raffle.end_condition.endswith('p'):
             required_participants = int(active_raffle.end_condition[:-1])
             if len(active_raffle.participants) >= required_participants:
                 await draw_raffle(context, update.message.chat_id)
     else:
-        exit_message = await update.message.reply_text(f'{user.username} 已经在抽奖名单中。')
+        exit_message = await update.message.reply_text(f'<a href=\"tg://user?id={user.id}\">{html_escape(user.first_name if (fn := user.first_name) is not None else "" + ' '+ user.last_name if (ln := user.last_name) is not None else "")}</a>已经在抽奖名单中。',parse_mode='HTML')
         # 调度删除消息任务
         context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=exit_message.message_id), 30)
 
@@ -228,12 +241,12 @@ async def draw_raffle(context: CallbackContext, chat_id: int = None) -> None:
         return
 
     winners = active_raffle.draw_winners()
-    winners_text = "\n".join([f"@{winner.split('-')[0]}" for winner in winners])
     await context.bot.send_message(
         chat_id if chat_id else context.job.context,
         f'抽奖活动结束！\n'
-        f'奖品名称：{active_raffle.prize_name}\n'
-        f'获奖者：\n{winners_text}\n'
+        f'奖品名称：{html_escape(active_raffle.prize_name)}\n'
+        f'获奖者：\n{", ".join([f"<a href=\"tg://user?id={w}\">{html_escape(active_raffle.participants[w])}</a>" for w in winners])}'
+        ,parse_mode='HTML'
     )
     active_raffle = None
 
