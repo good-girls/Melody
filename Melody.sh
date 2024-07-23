@@ -46,9 +46,8 @@ if [[ "$answer" =~ ^[yY]$ ]]; then
 
         # 执行脚本
         echo "${lv}正在启动 Melody-sh.py 脚本...${bai}"
-        python /root/Melody-sh.py
+        python3 /root/Melody-sh.py &
         echo "${lv}脚本已启动，后台运行...${bai}"
-        nohup python /root/Melody-sh.py &
       elif [[ "$choice" == "2" ]]; then
         echo "${lv}docker 安装...${bai}"
         # docker 安装逻辑
