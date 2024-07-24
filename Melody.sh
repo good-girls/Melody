@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 sh_v="1.0.1"
 
@@ -9,6 +9,12 @@ lan='\033[0;34m'
 hong='\033[31m'
 kjlan='\033[96m'
 hui='\e[37m'
+
+# 检查是否以root用户运行
+if [[ $EUID -ne 0 ]]; then
+  echo "${hong}请使用root用户运行脚本！${bai}"
+  exit 1
+fi
 
 echo "${lan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
 echo "${lan}欢迎使用Melody抽奖机器人！${bai}"
@@ -32,11 +38,18 @@ if [[ "$answer" =~ ^[yY]$ ]]; then
         echo "${lv}获取脚本中...${bai}"
         # 直接安装逻辑
         apt update && apt upgrade -y
-        if ! command -v python3 &> /dev/null; then
+        # 更健壮的Python和Pip安装检查
+        python3_command=$(which python3)
+        pip3_command=$(which pip3)
+        if [[ -z "$python3_command" ]]; then
           apt install python3 python3-pip -y
         fi
-        pip install python-telegram-bot --upgrade
-        pip install "python-telegram-bot[job-queue]"
+        # 更健壮的Pip安装检查
+        if [[ -z "$pip3_command" ]]; then
+          apt install python3-pip -y
+        fi
+        pip3 install python-telegram-bot --upgrade
+        pip3 install "python-telegram-bot[job-queue]"
         curl -L -o /root/Melody-sh.py https://raw.githubusercontent.com/good-girls/Melody/main/Melody-sh.py
         echo "${lv}获取脚本成功！${bai}"
 
