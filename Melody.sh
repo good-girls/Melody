@@ -37,13 +37,9 @@ UserLicenseAgreement() {
 }
 
 check_if_melody_running() {
-    if [[ -f "$PID_FILE" ]]; then
-        if ps -p "$(cat "$PID_FILE")" > /dev/null; then
-            echo "${hui}Melody已在后台运行${bai}"
-            exit 1
-        else
-            rm -f "$PID_FILE"
-        fi
+    if pgrep -f Melody-sh.py > /dev/null; then
+        echo -e "${hui}Melody已在后台运行${bai}"
+        exit 1
     fi
 }
 
@@ -80,9 +76,7 @@ uninstall_melody() {
     echo "Melody卸载完成"
 }
 
-Melody_sh() {
-    check_if_melody_running
-
+Melody_sh_menu() {
     while true; do
         clear
         echo -e "_  _ ____  _ _ _    _ ____ _  _ "
@@ -243,8 +237,8 @@ install_add_docker() {
             elif [ "$arch" = "aarch64" ]; then
                 sed -i '/^deb \[arch=arm64 signed-by=\/usr\/share\/keyrings\/docker-archive-keyring.gpg\] https:\/\/download.docker.com\/linux\/debian bullseye stable/d' /etc/apt/sources.list.d/docker.list > /dev/null
                 mkdir -p /etc/apt/keyrings
-                curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker-archive-keyring.gpg > /dev/null
-                echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+                curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null
+                echo "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
             fi
         fi
         
@@ -283,4 +277,4 @@ if [ ! -f "$FLAG_FILE" ]; then
     UserLicenseAgreement
 fi
 
-Melody_sh
+Melody_sh_menu
