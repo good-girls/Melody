@@ -1,5 +1,9 @@
 #!/bin/bash
 
+bai='\033[0m'
+hong='\033[31m'
+kjlan='\033[96m'
+
 sh_v="1.0.1"
 FLAG_FILE="$HOME/.melody_installed"
 
@@ -12,10 +16,10 @@ CheckRoot_true() {
 
 UserLicenseAgreement() {
     clear
-    echo -e "Melody，你的幸运之声！——Docker for Telegram Lottery Bot"
+    echo -e "${kjlan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
     echo -e "欢迎使用Melody抽奖机器人！"
     echo "----------------------"
-    read -r -p "是否继续运行脚本？(y/n): " user_input
+    read -r -p "${hong}是否继续运行脚本？(y/n): ${bai}" user_input
 
     if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
         touch "$FLAG_FILE"
