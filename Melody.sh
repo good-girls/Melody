@@ -19,13 +19,15 @@ CheckRoot_true() {
     fi
 }
 
-# 初始化 permission_granted 状态文件
 initialize_permission_file() {
     if [ ! -f /usr/local/bin/m ]; then
         sudo mkdir -p /usr/local/bin
         echo 'permission_granted="false"' | sudo tee /usr/local/bin/m > /dev/null
     fi
+    echo "File /usr/local/bin/m contents:"
+    cat /usr/local/bin/m
 }
+
 
 # 检查是否第一次运行，授权状态为 true
 CheckFirstRun_true() {
