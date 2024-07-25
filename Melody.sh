@@ -31,6 +31,7 @@ CheckFirstRun_true() {
 
 CheckFirstRun_true
 
+ENABLE_STATS="true"
 
 yinsiyuanquan1() {
 
