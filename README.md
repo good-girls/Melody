@@ -18,6 +18,13 @@ docker run -d \
   --name melody \
   josemespitia/melody:latest
 ```
+  
+## 卸载脚本 ##  
+```bash
+rm Melody.sh
+rm Melody.py
+sudo rm -f /var/tmp/melody_first_run
+```  
 
 ## Melody 的特点：
 简单易用： Melody 的操作界面简洁直观，即使是新手也能轻松上手。    
