@@ -21,29 +21,34 @@ CheckRoot_true() {
 
 permission_granted="false"
 
+# 初始化 permission_granted 状态
+initialize_permission_file() {
+    if [ ! -f /usr/local/bin/m ]; then
+        echo 'permission_granted="false"' | sudo tee /usr/local/bin/m > /dev/null
+    fi
+}
 
 CheckFirstRun_true() {
-    if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null 2>&1; then
+    if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null; then
         sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
         sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
     fi
 }
 
-CheckFirstRun_true
+# 检查第一次运行的逻辑 (未授权)
+CheckFirstRun_false() {
+    initialize_permission_file
+    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
+        UserLicenseAgreement
+    fi
+}
 
 ENABLE_STATS="true"
 
-send_stats() {
-    echo "send_stats function called with ENABLE_STATS=$ENABLE_STATS"
-    if [ "$ENABLE_STATS" == "false" ]; then
-        return
-    fi
-    UserLicenseAgreement
-}
 
 
 CheckFirstRun_false() {
-    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null 2>&1; then
+    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
         UserLicenseAgreement
     fi
 }
@@ -68,6 +73,13 @@ UserLicenseAgreement() {
 }
 
 CheckFirstRun_false
+
+send_stats() {
+    if [[ "$ENABLE_STATS" == "true" ]]; then
+        echo "send_stats function called with ENABLE_STATS=$ENABLE_STATS"
+        UserLicenseAgreement
+    fi
+}
 
 Melody_sh() {
     while true; do
