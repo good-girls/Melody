@@ -28,8 +28,6 @@ initialize_permission_file() {
     cat /usr/local/bin/m
 }
 
-
-# 检查是否第一次运行，授权状态为 true
 CheckFirstRun_true() {
     initialize_permission_file
     if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null; then
@@ -38,17 +36,8 @@ CheckFirstRun_true() {
     fi
 }
 
-# 检查是否第一次运行，授权状态为 false
 CheckFirstRun_false() {
     initialize_permission_file
-    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
-        UserLicenseAgreement
-    fi
-}
-
-
-
-CheckFirstRun_false() {
     if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
         UserLicenseAgreement
     fi
