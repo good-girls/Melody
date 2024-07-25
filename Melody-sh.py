@@ -138,7 +138,7 @@ async def join(update: Update, context: CallbackContext) -> None:
     
     # 检查用户是否是频道号
     if user.is_bot:
-        await update.message.reply_text('ChannelBot无法参与抽奖，请重试')
+        await update.message.reply_text('Channel_Bot无法参与抽奖，请重试')
         return
 
     if active_raffle.add_participant(user.username + '-' + str(user.id)):
