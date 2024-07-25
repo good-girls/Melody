@@ -1,39 +1,25 @@
 #!/bin/bash
 
 sh_v="1.0.1"
-
-# 定义颜色代码
-huang='\033[33m'
-bai='\033[0m'
-lv='\033[0;32m'
-lan='\033[0;34m'
-hong='\033[31m'
-kjlan='\033[96m'
-hui='\e[37m'
-
-# 设置标志文件路径
 FLAG_FILE="$HOME/.melody_installed"
 
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
-        echo -e "${hong}请使用root用户运行脚本！ ${bai}"
+        echo -e "请使用root用户运行脚本！"
         exit 1
     fi
 }
 
-# 提示用户同意条款
 UserLicenseAgreement() {
     clear
-    echo -e "${lan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
-    echo -e "${lan}欢迎使用Melody抽奖机器人！${bai}"
-    echo -e "----------------------"
+    echo -e "Melody，你的幸运之声！——Docker for Telegram Lottery Bot"
+    echo -e "欢迎使用Melody抽奖机器人！"
+    echo "----------------------"
     read -r -p "是否继续运行脚本？(y/n): " user_input
 
     if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
-        send_stats "许可同意"
         touch "$FLAG_FILE"
     else
-        send_stats "许可拒绝"
         clear
         exit 1
     fi
@@ -42,13 +28,13 @@ UserLicenseAgreement() {
 Melody_sh() {
     while true; do
         clear
-        echo -e "${kjlan}_  _ ____  _ _ _    _ ____ _  _ "
+        echo -e "_  _ ____  _ _ _    _ ____ _  _ "
         echo " __  __  _____  _      ____   ___   _  __  __ "
         echo "|  \/  || ____|| |    |  _ \ |_ _| | |/ / / /"
         echo "| |\/| ||  _|  | |    | | | | | |  | ' / / / "
         echo "| |  | || |___ | |___ | |_| | | |  | . \ \ \ "
         echo "|_|  |_||_____||_____||____/|___| |_|\_\ \_\ "
-        echo -e "${kjlan}Melody抽奖机器人 v$sh_v ！"
+        echo -e "Melody抽奖机器人 v$sh_v ！"
         echo "------------------------"
         echo "1. 直接安装"
         echo "2. docker 安装"
@@ -65,7 +51,6 @@ Melody_sh() {
 
             2)
                 clear
-                send_stats "docker 安装"
                 melody_docker
                 ;;
 
@@ -83,35 +68,32 @@ Melody_sh() {
 }
 
 melody_sh() {
-    echo -e "${huang}正在安装脚本...${bai}"
+    echo -e "正在安装脚本..."
 
     apt update && apt upgrade -y
 
-    python3_command=$(which python3)
-    pip3_command=$(which pip3)
-    if [[ -z "$python3_command" ]]; then
-        apt install python3 python3-pip -y
-    fi
+    # 检查并安装 python3-venv
+    apt install -y python3-venv
 
-    if [[ -z "$pip3_command" ]]; then
-        apt install python3-pip -y
-    fi
+    # 创建虚拟环境
+    python3 -m venv /root/myenv
 
-    pip3 install python-telegram-bot --upgrade
-    pip3 install "python-telegram-bot[job-queue]"
+    # 激活虚拟环境并安装 python-telegram-bot
+    source /root/myenv/bin/activate
+    pip install python-telegram-bot
 
     curl -L -o /root/Melody-sh.py https://raw.githubusercontent.com/good-girls/Melody/main/Melody-sh.py
 
-    echo "${lv}获取脚本成功！${bai}"
+    echo "获取脚本成功！"
 
     # 获取 API 并替换脚本
-    read -p "${lan}请输入你从@BotFather获取的完整机器人API： ${bai}" API
+    read -p "请输入你从@BotFather获取的完整机器人API： " API
     sed -i "s/application = Application.builder().token(\"你的机器人token\").build()/application = Application.builder().token(\"$API\").build()/g" /root/Melody-sh.py
 
     # 执行脚本
-    echo "${lv}正在启动 Melody-sh.py 脚本...${bai}"
-    python3 /root/Melody-sh.py &
-    echo "${lv}脚本已启动，后台运行...${bai}"
+    echo "正在启动 Melody-sh.py 脚本..."
+    /root/myenv/bin/python /root/Melody-sh.py &
+    echo "脚本已启动，后台运行..."
 }
 
 melody_docker() {
@@ -128,7 +110,6 @@ melody_docker() {
         case $sub_choice in
             y)
                 clear
-                send_stats "docker 安装"
                 install_add_docker
                 break
                 ;;
@@ -164,7 +145,7 @@ EOF
 }
 
 install_add_docker() {
-    echo -e "${huang}正在安装docker环境...${bai}"
+    echo -e "正在安装docker环境..."
     
     if [ -f /etc/os-release ] && grep -q -e "Debian" -e "Ubuntu" /etc/os-release; then
         apt update
@@ -214,7 +195,7 @@ install_docker() {
     if ! command -v docker &>/dev/null; then
         install_add_docker
     else
-        echo -e "${lv}Docker环境已经安装${bai}"
+        echo -e "Docker环境已经安装"
     fi
     
     # 获取 API 并替换命令
