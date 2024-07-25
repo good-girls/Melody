@@ -31,6 +31,15 @@ CheckFirstRun_true() {
 
 CheckFirstRun_true
 
+ENABLE_STATS="true"
+
+send_stats() {
+
+    if [ "$ENABLE_STATS" == "false" ]; then
+        return
+    fi
+    UserLicenseAgreement
+}
 
 CheckFirstRun_false() {
     if grep -q '^permission_granted="false"' /usr/local/bin/k > /dev/null 2>&1; then
