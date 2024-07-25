@@ -35,7 +35,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # 处理 /test 命令
-async def test(update: Update,  context: CallbackContext) -> None:
+async def test(update: Update, context: CallbackContext) -> None:
     global active_raffle
     if active_raffle is None:
         await update.message.reply_text(f'没有抽奖')
@@ -53,10 +53,7 @@ async def test(update: Update,  context: CallbackContext) -> None:
         f'奖品名称：{active_raffle.prize_name}\n'
         f'获奖者：{", ".join(winners)}\n'
     )
-    #active_raffle = None
     await update.message.reply_text(f"测试抽奖")
-
-    
 
 # 检查用户是否为管理员
 async def is_user_admin(update: Update) -> bool:
@@ -73,7 +70,7 @@ async def is_user_admin(update: Update) -> bool:
 # 处理 /create 命令
 async def create(update: Update, context: CallbackContext) -> None:
     global active_raffle
-    if not is_user_admin(update):
+    if not await is_user_admin(update):
         await update.message.reply_text('只有管理员才能创建抽奖活动。')
         return
 
@@ -132,7 +129,7 @@ async def join(update: Update, context: CallbackContext) -> None:
         return
 
     user = update.message.from_user
-    if user.username is None :
+    if user.username is None:
         await update.message.reply_text('请设置用户名称再重试。')
         return
     
@@ -164,14 +161,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user = update.message.from_user
     if user.username is None:
         hint_message = await update.message.reply_text('请设置用户名称再重试。')
-       # 调度删除消息任务
+        # 调度删除消息任务
         context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=hint_message.message_id), 30)
-
         return
 
     # 检查用户是否是频道号
     if user.is_bot:
-        await update.message.reply_text('ChannelBot无法参与抽奖，请重试')
+        await update.message.reply_text('Channel_Bot无法参与抽奖，请重试')
         return
 
     if active_raffle.add_participant(user.username + '-' + str(user.id)):
@@ -194,7 +190,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         # 调度删除消息任务
         context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=exit_message.message_id), 30)
 
-
 async def delete_message(context: CallbackContext) -> None:
     job = context.job
     chat_id = job.data['chat_id']
@@ -212,11 +207,10 @@ def wrap_delete_message(chat_id, message_id):
             print(f"Error deleting message: {e}")
     return wrapped
 
-
 # 处理 /cancel 命令
 async def cancel(update: Update, context: CallbackContext) -> None:
     global active_raffle
-    if not is_user_admin(update):
+    if not await is_user_admin(update):
         await update.message.reply_text('只有管理员才能取消抽奖活动。')
         return
 
