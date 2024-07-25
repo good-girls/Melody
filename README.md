@@ -23,6 +23,7 @@ docker run -d \
 ```bash
 rm Melody.sh
 rm Melody.py
+rm /usr/local/bin/m
 ```  
 
 ## Melody 的特点：
