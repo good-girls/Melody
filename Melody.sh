@@ -19,23 +19,23 @@ CheckRoot_true() {
     fi
 }
 
-permission_granted="false"
-
-# 初始化 permission_granted 状态
+# 初始化 permission_granted 状态文件
 initialize_permission_file() {
     if [ ! -f /usr/local/bin/m ]; then
         echo 'permission_granted="false"' | sudo tee /usr/local/bin/m > /dev/null
     fi
 }
 
+# 检查是否第一次运行，授权状态为 true
 CheckFirstRun_true() {
+    initialize_permission_file
     if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null; then
         sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
         sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
     fi
 }
 
-# 检查第一次运行的逻辑 (未授权)
+# 检查是否第一次运行，授权状态为 false
 CheckFirstRun_false() {
     initialize_permission_file
     if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
