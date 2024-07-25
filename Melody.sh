@@ -43,8 +43,6 @@ CheckFirstRun_false() {
     fi
 }
 
-ENABLE_STATS="true"
-
 
 
 CheckFirstRun_false() {
@@ -72,8 +70,7 @@ UserLicenseAgreement() {
     fi
 }
 
-CheckFirstRun_false
-
+# 发送统计数据
 send_stats() {
     if [[ "$ENABLE_STATS" == "true" ]]; then
         echo "send_stats function called with ENABLE_STATS=$ENABLE_STATS"
