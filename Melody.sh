@@ -11,35 +11,13 @@ hong='\033[31m'
 kjlan='\033[96m'
 hui='\e[37m'
 
+# 设置标志文件路径
+FLAG_FILE="$HOME/.melody_installed"
 
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
-      echo -e "${hong}请使用root用户运行脚本！ ${bai}"
-      exit 1
-    fi
-}
-
-initialize_permission_file() {
-    if [ ! -f /usr/local/bin/m ]; then
-        sudo mkdir -p /usr/local/bin
-        echo 'permission_granted="false"' | sudo tee /usr/local/bin/m > /dev/null
-    fi
-    echo "File /usr/local/bin/m contents:"
-    cat /usr/local/bin/m
-}
-
-CheckFirstRun_true() {
-    initialize_permission_file
-    if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null; then
-        sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
-        sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
-    fi
-}
-
-CheckFirstRun_false() {
-    initialize_permission_file
-    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null; then
-        UserLicenseAgreement
+        echo -e "${hong}请使用root用户运行脚本！ ${bai}"
+        exit 1
     fi
 }
 
@@ -51,10 +29,9 @@ UserLicenseAgreement() {
     echo -e "----------------------"
     read -r -p "是否继续运行脚本？(y/n): " user_input
 
-    if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
+    if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
         send_stats "许可同意"
-        sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
-        sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
+        touch "$FLAG_FILE"
     else
         send_stats "许可拒绝"
         clear
@@ -62,18 +39,9 @@ UserLicenseAgreement() {
     fi
 }
 
-# 发送统计数据
-send_stats() {
-    if [[ "$ENABLE_STATS" == "true" ]]; then
-        echo "send_stats function called with ENABLE_STATS=$ENABLE_STATS"
-        UserLicenseAgreement
-    fi
-}
-
 Melody_sh() {
     while true; do
         clear
-
         echo -e "${kjlan}_  _ ____  _ _ _    _ ____ _  _ "
         echo " __  __  _____  _      ____   ___   _  __  __ "
         echo "|  \/  || ____|| |    |  _ \ |_ _| | |/ / / /"
@@ -114,8 +82,6 @@ Melody_sh() {
     done
 }
 
-
-
 melody_sh() {
     echo -e "${huang}正在安装脚本...${bai}"
 
@@ -151,7 +117,6 @@ melody_sh() {
 melody_docker() {
     while true; do
         clear
-        # send_stats "docker管理"
         echo "▶ 即将使用Docker安装"
         echo "------------------------"
         echo "y. 是否继续安装"
@@ -181,28 +146,22 @@ melody_docker() {
     done
 }
 
-
-
 install_add_docker_guanfang() {
-country=$(curl -s ipinfo.io/country)
-if [ "$country" = "CN" ]; then
-    cd ~
-    curl -sS -O https://raw.githubusercontent.com/good-girls/Melody/main/install && chmod +x install
-    sh install --mirror Aliyun
-    rm -f install
-    cat > /etc/docker/daemon.json << EOF
+    country=$(curl -s ipinfo.io/country)
+    if [ "$country" = "CN" ]; then
+        cd ~
+        curl -sS -O https://raw.githubusercontent.com/good-girls/Melody/main/install && chmod +x install
+        sh install --mirror Aliyun
+        rm -f install
+        cat > /etc/docker/daemon.json << EOF
 {
     "registry-mirrors": ["https://docker.jose.us.kg"]
 }
 EOF
-
-else
-    curl -fsSL https://get.docker.com | sh
-fi
-
+    else
+        curl -fsSL https://get.docker.com | sh
+    fi
 }
-
-
 
 install_add_docker() {
     echo -e "${huang}正在安装docker环境...${bai}"
@@ -251,7 +210,6 @@ install_add_docker() {
     sleep 2
 }
 
-
 install_docker() {
     if ! command -v docker &>/dev/null; then
         install_add_docker
@@ -269,3 +227,12 @@ install_docker() {
 
     echo "Melody-Bot 已启动，后台运行..."
 }
+
+# 主程序逻辑
+CheckRoot_true
+
+if [ ! -f "$FLAG_FILE" ]; then
+    UserLicenseAgreement
+fi
+
+Melody_sh
