@@ -16,7 +16,7 @@ flag_file="/var/tmp/melody_first_run"
 
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
-      echo -e "${hong}请使用root用户运行脚本！${bai}"
+      echo -e "${hong}请使用root用户运行脚本！ ${bai}"
       exit 1
     fi
 }
@@ -31,6 +31,7 @@ CheckFirstRun_false() {
         UserLicenseAgreement
     else
         echo "Not the first run or license already accepted."
+        Melody_sh  # 确保调用主菜单函数
     fi
 }
 
