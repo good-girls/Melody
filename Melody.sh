@@ -26,19 +26,21 @@ send_stats() {
 }
 
 CheckFirstRun_false() {
+    echo "进入 CheckFirstRun_false 函数"
     if [[ ! -f $flag_file ]]; then
-        echo "First run detected. Displaying license agreement..."
+        echo "检测到第一次运行，显示许可协议"
         UserLicenseAgreement
     else
-        echo "Not the first run or license already accepted."
+        echo "不是第一次运行或许可已经接受"
         Melody_sh  # 确保调用主菜单函数
     fi
+    echo "CheckFirstRun_false 函数结束"
 }
 
 UserLicenseAgreement() {
     clear
     echo -e "${lan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
-    echo "${lan}欢迎使用Melody抽奖机器人！${bai}"
+    echo -e "${lan}欢迎使用Melody抽奖机器人！${bai}"
     echo -e "----------------------"
     read -r -p "是否继续运行脚本？(y/n): " user_input
 
