@@ -11,16 +11,26 @@ hong='\033[31m'
 kjlan='\033[96m'
 hui='\e[37m'
 
+# 标志文件路径
+flag_file="/var/tmp/melody_first_run"
+
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
-      echo "${hong}请使用root用户运行脚本！${bai}"
+      echo -e "${hong}请使用root用户运行脚本！${bai}"
       exit 1
     fi
 }
 
+send_stats() {
+    echo "Logging stats: $1"  # 这里你可以实现实际的日志记录功能
+}
+
 CheckFirstRun_false() {
-    if grep -q '^permission_granted="false"' /usr/local/bin/k > /dev/null 2>&1; then
+    if [[ ! -f $flag_file ]]; then
+        echo "First run detected. Displaying license agreement..."
         UserLicenseAgreement
+    else
+        echo "Not the first run or license already accepted."
     fi
 }
 
@@ -33,6 +43,8 @@ UserLicenseAgreement() {
 
     if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
         send_stats "许可同意"
+        # 创建标志文件以标记许可已经同意
+        touch "$flag_file"
     else
         send_stats "许可拒绝"
         clear
@@ -40,6 +52,10 @@ UserLicenseAgreement() {
     fi
 }
 
+# 确保脚本以root用户运行
+CheckRoot_true
+
+# 检查是否是第一次运行
 CheckFirstRun_false
 
 Melody_sh() {
