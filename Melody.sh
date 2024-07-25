@@ -31,47 +31,6 @@ CheckFirstRun_true() {
 
 CheckFirstRun_true
 
-ENABLE_STATS="true"
-
-send_stats() {
-
-    if [ "$ENABLE_STATS" == "false" ]; then
-        return
-    fi
-
-    country=$(curl -s ipinfo.io/country)
-    os_info=$(grep PRETTY_NAME /etc/os-release | cut -d '=' -f2 | tr -d '"')
-    cpu_arch=$(uname -m)
-    curl -s -X POST "https://api.kejilion.pro/api/log" \
-         -H "Content-Type: application/json" \
-         -d "{\"action\":\"$1\",\"timestamp\":\"$(date -u '+%Y-%m-%d %H:%M:%S')\",\"country\":\"$country\",\"os_info\":\"$os_info\",\"cpu_arch\":\"$cpu_arch\",\"version\":\"$sh_v\"}" &>/dev/null &
-}
-
-yinsiyuanquan1() {
-
-if grep -q '^ENABLE_STATS="true"' /usr/local/bin/m > /dev/null 2>&1; then
-    status_message="${lv}正在采集数据${bai}"
-elif grep -q '^ENABLE_STATS="false"' /usr/local/bin/m > /dev/null 2>&1; then
-    status_message="${hui}采集已关闭${bai}"
-else
-    status_message="无法确定的状态"
-fi
-
-}
-
-
-yinsiyuanquan2() {
-
-if grep -q '^ENABLE_STATS="false"' /usr/local/bin/m > /dev/null 2>&1; then
-    sed -i 's/^ENABLE_STATS="true"/ENABLE_STATS="false"/' ./Melody.sh
-    sed -i 's/^ENABLE_STATS="true"/ENABLE_STATS="false"/' /usr/local/bin/m
-fi
-
-}
-
-yinsiyuanquan2
-cp ./Melody.sh /usr/local/bin/m > /dev/null 2>&1
-
 
 CheckFirstRun_false() {
     if grep -q '^permission_granted="false"' /usr/local/bin/k > /dev/null 2>&1; then
