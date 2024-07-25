@@ -42,7 +42,7 @@ send_stats() {
 }
 
 CheckFirstRun_false() {
-    if grep -q '^permission_granted="false"' /usr/local/bin/k > /dev/null 2>&1; then
+    if grep -q '^permission_granted="false"' /usr/local/bin/m > /dev/null 2>&1; then
         UserLicenseAgreement
     fi
 }
