@@ -22,6 +22,7 @@ CheckRoot_true() {
 # 初始化 permission_granted 状态文件
 initialize_permission_file() {
     if [ ! -f /usr/local/bin/m ]; then
+        sudo mkdir -p /usr/local/bin
         echo 'permission_granted="false"' | sudo tee /usr/local/bin/m > /dev/null
     fi
 }
