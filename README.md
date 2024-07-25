@@ -6,7 +6,7 @@ Melody 是一个友善且易于使用的 Telegram 抽奖机器人，它能为你
 
 ## 一键部署  
 ```bash
-curl -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.sh && chmod +x Melody.sh && ./Melody.sh
+curl -Ss -O https://raw.githubusercontent.com/good-girls/Melody/main/Melody.sh && chmod +x Melody.sh && ./Melody.sh
 ```
 
 
