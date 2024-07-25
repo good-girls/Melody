@@ -1,15 +1,22 @@
 #!/bin/bash
 
+huang='\033[33m'
 bai='\033[0m'
+lv='\033[0;32m'
+lan='\033[0;34m'
 hong='\033[31m'
 kjlan='\033[96m'
+hui='\e[37m'
 
-sh_v="1.0.1"
+sh_v="1.1.2"
 FLAG_FILE="$HOME/.melody_installed"
+PID_FILE="/tmp/melody_sh.pid"
+SCRIPT_PATH="/root/Melody-sh.py"
+VENV_PATH="/root/myenv"
 
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
-        echo -e "请使用root用户运行脚本！"
+        echo -e "${hong}请使用root用户运行脚本！${bai}"
         exit 1
     fi
 }
@@ -17,9 +24,9 @@ CheckRoot_true() {
 UserLicenseAgreement() {
     clear
     echo -e "${kjlan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
-    echo -e "欢迎使用Melody抽奖机器人！"
+    echo -e "${lv}欢迎使用Melody抽奖机器人！${bai}"
     echo "----------------------"
-    read -r -p "${hong}是否继续运行脚本？(y/n): ${bai}" user_input
+    read -r -p "${huang}是否继续运行脚本？(y/n):${bai}" user_input
 
     if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
         touch "$FLAG_FILE"
@@ -29,7 +36,53 @@ UserLicenseAgreement() {
     fi
 }
 
+check_if_melody_running() {
+    if [[ -f "$PID_FILE" ]]; then
+        if ps -p "$(cat "$PID_FILE")" > /dev/null; then
+            echo "${hui}Melody已在后台运行${bai}"
+            exit 1
+        else
+            rm -f "$PID_FILE"
+        fi
+    fi
+}
+
+uninstall_melody() {
+    check_if_melody_running
+
+    echo -e "正在卸载Melody..."
+
+    # 停止并删除运行中的进程
+    if [[ -f "$PID_FILE" ]]; then
+        kill "$(cat "$PID_FILE")"
+        rm -f "$PID_FILE"
+        echo "已停止运行的脚本"
+    fi
+
+    # 删除虚拟环境
+    if [[ -d "$VENV_PATH" ]]; then
+        rm -rf "$VENV_PATH"
+        echo "已删除虚拟环境"
+    fi
+
+    # 删除脚本
+    if [[ -f "$SCRIPT_PATH" ]]; then
+        rm -f "$SCRIPT_PATH"
+        echo "已删除脚本文件"
+    fi
+
+    # 删除标志文件
+    if [[ -f "$FLAG_FILE" ]]; then
+        rm -f "$FLAG_FILE"
+        echo "已删除标志文件"
+    fi
+
+    echo "Melody卸载完成"
+}
+
 Melody_sh() {
+    check_if_melody_running
+
     while true; do
         clear
         echo -e "_  _ ____  _ _ _    _ ____ _  _ "
@@ -38,10 +91,12 @@ Melody_sh() {
         echo "| |\/| ||  _|  | |    | | | | | |  | ' / / / "
         echo "| |  | || |___ | |___ | |_| | | |  | . \ \ \ "
         echo "|_|  |_||_____||_____||____/|___| |_|\_\ \_\ "
-        echo -e "Melody抽奖机器人 v$sh_v ！"
+        echo -e "${lan}Melody抽奖机器人 v$sh_v ！${bai}"
         echo "------------------------"
         echo "1. 直接安装"
         echo "2. docker 安装"
+        echo "------------------------"
+        echo "00. 卸载脚本"
         echo "------------------------"
         echo "0. 退出脚本"
         echo "------------------------"
@@ -58,6 +113,11 @@ Melody_sh() {
                 melody_docker
                 ;;
 
+            00)
+                clear
+                uninstall_melody
+                ;;
+
             0)
                 clear
                 exit
@@ -72,6 +132,8 @@ Melody_sh() {
 }
 
 melody_sh() {
+    check_if_melody_running
+
     echo -e "正在安装脚本..."
 
     apt update && apt upgrade -y
@@ -80,23 +142,24 @@ melody_sh() {
     apt install -y python3-venv
 
     # 创建虚拟环境
-    python3 -m venv /root/myenv
+    python3 -m venv "$VENV_PATH"
 
     # 激活虚拟环境并安装 python-telegram-bot
-    source /root/myenv/bin/activate
+    source "$VENV_PATH/bin/activate"
     pip install python-telegram-bot
 
-    curl -L -o /root/Melody-sh.py https://raw.githubusercontent.com/good-girls/Melody/main/Melody-sh.py
+    curl -L -o "$SCRIPT_PATH" https://raw.githubusercontent.com/good-girls/Melody/main/Melody-sh.py
 
     echo "获取脚本成功！"
 
     # 获取 API 并替换脚本
     read -p "请输入你从@BotFather获取的完整机器人API： " API
-    sed -i "s/application = Application.builder().token(\"你的机器人token\").build()/application = Application.builder().token(\"$API\").build()/g" /root/Melody-sh.py
+    sed -i "s/application = Application.builder().token(\"你的机器人token\").build()/application = Application.builder().token(\"$API\").build()/g" "$SCRIPT_PATH"
 
     # 执行脚本
     echo "正在启动 Melody-sh.py 脚本..."
-    /root/myenv/bin/python /root/Melody-sh.py &
+    /root/myenv/bin/python "$SCRIPT_PATH" &
+    echo $! > "$PID_FILE"
     echo "脚本已启动，后台运行..."
 }
 
