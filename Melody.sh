@@ -11,8 +11,6 @@ hong='\033[31m'
 kjlan='\033[96m'
 hui='\e[37m'
 
-# 标志文件路径
-flag_file="/var/tmp/melody_first_run"
 
 CheckRoot_true() {
     if [[ $EUID -ne 0 ]]; then
@@ -21,22 +19,52 @@ CheckRoot_true() {
     fi
 }
 
-send_stats() {
-    echo "Logging stats: $1"  # 这里你可以实现实际的日志记录功能
+permission_granted="false"
+
+
+CheckFirstRun_true() {
+    if grep -q '^permission_granted="true"' /usr/local/bin/m > /dev/null 2>&1; then
+        sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
+        sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
+    fi
 }
+
+CheckFirstRun_true
+
+
+yinsiyuanquan1() {
+
+if grep -q '^ENABLE_STATS="true"' /usr/local/bin/m > /dev/null 2>&1; then
+    status_message="${lv}正在采集数据${bai}"
+elif grep -q '^ENABLE_STATS="false"' /usr/local/bin/m > /dev/null 2>&1; then
+    status_message="${hui}采集已关闭${bai}"
+else
+    status_message="无法确定的状态"
+fi
+
+}
+
+
+yinsiyuanquan2() {
+
+if grep -q '^ENABLE_STATS="false"' /usr/local/bin/m > /dev/null 2>&1; then
+    sed -i 's/^ENABLE_STATS="true"/ENABLE_STATS="false"/' ./Melody.sh
+    sed -i 's/^ENABLE_STATS="true"/ENABLE_STATS="false"/' /usr/local/bin/m
+fi
+
+}
+
+yinsiyuanquan2
+cp ./Melody.sh /usr/local/bin/m > /dev/null 2>&1
+
 
 CheckFirstRun_false() {
-    echo "进入 CheckFirstRun_false 函数"
-    if [[ ! -f $flag_file ]]; then
-        echo "检测到第一次运行，显示许可协议"
+    if grep -q '^permission_granted="false"' /usr/local/bin/k > /dev/null 2>&1; then
         UserLicenseAgreement
-    else
-        echo "不是第一次运行或许可已经接受"
-        Melody_sh  # 确保调用主菜单函数
     fi
-    echo "CheckFirstRun_false 函数结束"
 }
 
+# 提示用户同意条款
 UserLicenseAgreement() {
     clear
     echo -e "${lan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
@@ -46,8 +74,8 @@ UserLicenseAgreement() {
 
     if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
         send_stats "许可同意"
-        # 创建标志文件以标记许可已经同意
-        touch "$flag_file"
+        sed -i 's/^permission_granted="false"/permission_granted="true"/' ~/Melody.sh
+        sed -i 's/^permission_granted="false"/permission_granted="true"/' /usr/local/bin/m
     else
         send_stats "许可拒绝"
         clear
@@ -55,10 +83,6 @@ UserLicenseAgreement() {
     fi
 }
 
-# 确保脚本以root用户运行
-CheckRoot_true
-
-# 检查是否是第一次运行
 CheckFirstRun_false
 
 Melody_sh() {
