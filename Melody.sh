@@ -26,7 +26,7 @@ UserLicenseAgreement() {
     echo -e "${kjlan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
     echo -e "${lv}欢迎使用Melody抽奖机器人！${bai}"
     echo "----------------------"
-    read -r -p "是否继续运行脚本？(y/n):" user_input
+    read -r -p "是否继续运行脚本？(y/n): " user_input
 
     if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
         touch "$FLAG_FILE"
