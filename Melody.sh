@@ -73,6 +73,11 @@ uninstall_melody() {
         echo "已删除标志文件"
     fi
 
+    # 删除自身脚本
+    if [[ -f "$0" ]]; then
+        rm -f "$0"
+    fi
+
     echo "Melody卸载完成"
 }
 
