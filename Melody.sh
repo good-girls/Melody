@@ -120,7 +120,7 @@ Melody_sh_menu() {
 
             0)
                 clear
-                exit 0
+                exit
                 ;;
 
             *)
