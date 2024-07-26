@@ -45,6 +45,13 @@ check_if_melody_running() {
 uninstall_melody() {
     echo -e "正在卸载Melody..."
 
+    # 停止并删除容器
+    if docker ps -a --format '{{.Names}}' | grep -q melody; then
+        docker stop melody
+        docker rm melody
+        echo "已停止并删除容器"
+    fi
+
     # 停止并删除运行中的进程
     pkill -f Melody-sh.py
 
