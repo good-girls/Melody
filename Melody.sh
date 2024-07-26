@@ -44,11 +44,11 @@ check_if_melody_running() {
 }
 
 uninstall_melody() {
-    check_if_melody_running
-
     echo -e "正在卸载Melody..."
 
     # 停止并删除运行中的进程
+    pkill -f Melody-sh.py
+
     if [[ -f "$PID_FILE" ]]; then
         kill "$(cat "$PID_FILE")"
         rm -f "$PID_FILE"
