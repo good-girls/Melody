@@ -79,6 +79,7 @@ uninstall_melody() {
     fi
 
     echo "Melody卸载完成"
+    exit 0
 }
 
 Melody_sh_menu() {
@@ -119,7 +120,7 @@ Melody_sh_menu() {
 
             0)
                 clear
-                exit
+                exit 0
                 ;;
 
             *)
@@ -160,6 +161,8 @@ melody_sh() {
     /root/myenv/bin/python "$SCRIPT_PATH" &
     echo $! > "$PID_FILE"
     echo "脚本已启动，后台运行..."
+    
+    exit 0
 }
 
 melody_docker() {
@@ -177,7 +180,7 @@ melody_docker() {
             y)
                 clear
                 install_add_docker
-                break
+                exit 0
                 ;;
 
             0)
@@ -273,6 +276,7 @@ install_docker() {
       josemespitia/melody:latest
 
     echo "Melody-Bot 已启动，后台运行..."
+    exit 0
 }
 
 # 主程序逻辑
