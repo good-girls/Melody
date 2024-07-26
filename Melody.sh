@@ -175,7 +175,12 @@ melody_docker() {
         case $sub_choice in
             y)
                 clear
-                install_add_docker
+                country=$(curl -s ipinfo.io/country)
+                if [ "$country" = "CN" ]; then
+                    install_add_docker_guanfang
+                else
+                    install_docker
+                fi
                 break
                 ;;
 
