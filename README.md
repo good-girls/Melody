@@ -19,7 +19,7 @@ docker run -d \
   josemespitia/melody:latest
 ```
   
-## 卸载脚本 ##  
+## 检测卸载脚本是否有残留 ##  
 ```bash
 rm Melody.sh
 rm Melody.py
