@@ -26,7 +26,7 @@ UserLicenseAgreement() {
     echo -e "${kjlan}Melody，你的幸运之声！——Docker for Telegram Lottery Bot${bai}"
     echo -e "${lv}欢迎使用Melody抽奖机器人！${bai}"
     echo "----------------------"
-    read -r -p "是否继续运行脚本？(y/n): " user_input
+    read -r -p "${huang}是否继续运行脚本？(y/n):${bai}" user_input
 
     if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
         touch "$FLAG_FILE"
@@ -79,7 +79,6 @@ uninstall_melody() {
     fi
 
     echo "Melody卸载完成"
-    exit 0
 }
 
 Melody_sh_menu() {
@@ -161,8 +160,6 @@ melody_sh() {
     /root/myenv/bin/python "$SCRIPT_PATH" &
     echo $! > "$PID_FILE"
     echo "脚本已启动，后台运行..."
-    
-    exit 0
 }
 
 melody_docker() {
@@ -180,7 +177,7 @@ melody_docker() {
             y)
                 clear
                 install_add_docker
-                exit 0
+                break
                 ;;
 
             0)
@@ -276,7 +273,6 @@ install_docker() {
       josemespitia/melody:latest
 
     echo "Melody-Bot 已启动，后台运行..."
-    exit 0
 }
 
 # 主程序逻辑
