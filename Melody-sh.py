@@ -61,6 +61,8 @@ async def is_user_admin(update: Update) -> bool:
     chat_id = update.message.chat_id
     try:
         chat_member = await update.message.chat.get_member(user_id)
+        # 打印 chat_member 对象以调试
+        print(chat_member)
         if chat_member.status in ['administrator', 'creator']:
             return True
     except TelegramError as e:
