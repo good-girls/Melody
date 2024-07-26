@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 from telegram import Chat, Update, Bot
-from telegram.ext import Application, Updater, filters, MessageHandler, CommandHandler, ContextTypes, CallbackContext
-from telegram.error import TelegramError
+from telegram.ext import Application, filters, MessageHandler, CommandHandler, ContextTypes, CallbackContext
+from telegram.error import TelegramError, NetworkError
 from functools import partial
 import asyncio
 import random
+import logging
+
+# 设置日志记录器
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 # 存储抽奖活动的全局变量
 active_raffle = None
@@ -27,6 +35,19 @@ class Raffle:
         winners = random.sample(self.participants, min(self.prize_count, len(self.participants)))
         return winners
 
+# 重试装饰器
+def retry_on_failure(func):
+    async def wrapper(*args, **kwargs):
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                return await func(*args, **kwargs)
+            except (NetworkError, TelegramError) as e:
+                logger.error(f"Attempt {attempt + 1} failed with error: {e}")
+                await asyncio.sleep(2 ** attempt)
+        logger.error(f"All {max_retries} attempts failed")
+    return wrapper
+
 # 处理 /start 命令
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
@@ -35,6 +56,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # 处理 /test 命令
+@retry_on_failure
 async def test(update: Update, context: CallbackContext) -> None:
     global active_raffle
     if active_raffle is None:
@@ -48,7 +70,7 @@ async def test(update: Update, context: CallbackContext) -> None:
         f'获奖者：{", ".join(winners)}\n'
     )
     await context.bot.send_message(
-        chat_id if chat_id else context.job.context,
+        chat_id,
         f'抽奖活动结束！\n'
         f'奖品名称：{active_raffle.prize_name}\n'
         f'获奖者：{", ".join(winners)}\n'
@@ -56,20 +78,20 @@ async def test(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text(f"测试抽奖")
 
 # 检查用户是否为管理员
+@retry_on_failure
 async def is_user_admin(update: Update) -> bool:
     user_id = update.message.from_user.id
     chat_id = update.message.chat_id
     try:
         chat_member = await update.message.chat.get_member(user_id)
-        # 打印 chat_member 对象以调试
-        print(chat_member)
         if chat_member.status in ['administrator', 'creator']:
             return True
     except TelegramError as e:
-        print(f"Error checking admin status: {e}")
+        logger.error(f"Error checking admin status: {e}")
     return False
 
 # 处理 /create 命令
+@retry_on_failure
 async def create(update: Update, context: CallbackContext) -> None:
     global active_raffle
     if not await is_user_admin(update):
@@ -114,6 +136,7 @@ async def create(update: Update, context: CallbackContext) -> None:
         active_raffle = None
 
 # 处理 /join 命令
+@retry_on_failure
 async def join(update: Update, context: CallbackContext) -> None:
     global active_raffle
     if active_raffle is None:
@@ -134,11 +157,13 @@ async def join(update: Update, context: CallbackContext) -> None:
     if user.username is None:
         await update.message.reply_text('请设置用户名称再重试。')
         return
-    
-    # 检查用户是否是频道号
+
+    # 检查用户是否是 bot
     if user.is_bot:
-        await update.message.reply_text('Channel_Bot无法参与抽奖，请重试')
-        return
+        # 检查 bot 的用户名是否在允许的名单中
+        if user.username not in ['GroupAnonymousBot', 'MelodyLottery_bot']:
+            await update.message.reply_text('Bot无法参与抽奖，请重试')
+            return
 
     if active_raffle.add_participant(user.username + '-' + str(user.id)):
         length = len(active_raffle.participants)
@@ -151,6 +176,7 @@ async def join(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text(f'{user.username} 已经在抽奖名单中。')
 
 # 处理用户消息
+@retry_on_failure
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global active_raffle
     if active_raffle is None:
@@ -167,10 +193,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         context.job_queue.run_once(wrap_delete_message(chat_id=update.message.chat_id, message_id=hint_message.message_id), 30)
         return
 
-    # 检查用户是否是频道号
+    # 检查用户是否是 bot
     if user.is_bot:
-        await update.message.reply_text('Channel_Bot无法参与抽奖，请重试')
-        return
+        # 检查 bot 的用户名是否在允许的名单中
+        if user.username not in ['GroupAnonymousBot', 'MelodyLottery_bot']:
+            await update.message.reply_text('Bot无法参与抽奖，请重试')
+            return
 
     if active_raffle.add_participant(user.username + '-' + str(user.id)):
         length = len(active_raffle.participants)
@@ -199,17 +227,18 @@ async def delete_message(context: CallbackContext) -> None:
     try:
         await context.bot.delete_message(chat_id, message_id)
     except TelegramError as e:
-        print(f"Error deleting message: {e}")
+        logger.error(f"Error deleting message: {e}")
 
 def wrap_delete_message(chat_id, message_id):
     async def wrapped(context: CallbackContext):
         try:
             await context.bot.delete_message(chat_id, message_id)
         except TelegramError as e:
-            print(f"Error deleting message: {e}")
+            logger.error(f"Error deleting message: {e}")
     return wrapped
 
 # 处理 /cancel 命令
+@retry_on_failure
 async def cancel(update: Update, context: CallbackContext) -> None:
     global active_raffle
     if not await is_user_admin(update):
@@ -223,6 +252,7 @@ async def cancel(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text('当前抽奖活动已取消。')
 
 # 抽奖
+@retry_on_failure
 async def draw_raffle(context: CallbackContext, chat_id: int = None) -> None:
     global active_raffle
     if active_raffle is None:
